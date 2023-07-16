@@ -1,0 +1,15 @@
+DEBUG=1
+SECRET_KEY=change_me
+DJANGO_ALLOWED_HOSTS=*
+
+DB_HOST=db
+DB_NAME=devdb
+DB_USER=devuser
+DB_PASS=change_me
+
+POSTGRES_DB=devdb
+POSTGRES_USER=devuser
+POSTGRES_PASSWORD=change_me
+
+CELERY_BROKER=redis://redis:6379/0
+CELERY_BACKEND=redis://redis:6379/0

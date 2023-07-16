@@ -1,0 +1,102 @@
+version: '2.19'
+
+services:
+  web:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: whg3_web
+    command: /start
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env/.dev-whg3
+    ports:
+      - 8001:8000
+    depends_on:
+      - redis
+      - db
+      
+  livereload:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: whg3_livereload
+    command: /start-livereload
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env/.dev-whg3
+    ports:
+      - 35729:35729
+    depends_on:
+      - web
+
+  db:
+    platform: linux/amd64
+    image: postgis/postgis:14-3.3
+    container_name: postgres
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    env_file:
+      - ./.env/.dev-whg3
+    ports:
+      - 5432:5432
+    command: -p 5432
+
+  redis:
+    platform: linux/amd64
+    image: redis:bullseye
+    container_name: redis
+    ports: [6379:6379]
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: whg3_celery_worker
+    command: /start-celeryworker
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env/.dev-whg3
+    depends_on:
+      - redis
+      - db
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: whg3_celery_beat
+    command: /start-celerybeat
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env/.dev-whg3
+    depends_on:
+      - redis
+      - db
+
+  flower:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: whg3_celery_flower
+    command: /start-flower
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env/.dev-whg3
+    ports:
+      - 5557:5555
+    depends_on:
+      - redis
+      - db
+
+volumes:
+  app:
+  dev-db-data:
+  livereload-data:
